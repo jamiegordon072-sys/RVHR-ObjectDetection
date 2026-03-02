@@ -1,0 +1,9 @@
+path: C:\Users\J Gordon\Documents\RVHR\Object Detection\Weld model attempt\data\model_training # datbase absolutle path 
+train: C:\Users\J Gordon\Documents\RVHR\Object Detection\Weld model attempt\data\model_training\images\train # train images path relative to above path
+val: C:\Users\J Gordon\Documents\RVHR\Object Detection\Weld model attempt\data\model_training\images\val # validation images path relative to above path
+
+# Classes
+names:
+  0: weld
+  1: corrugation
+  2: microcorrugation
