@@ -122,7 +122,7 @@ def write_to_db(all_predictions: list, database_path: str, image_path: str):
 
     # Timestamp
     now = datetime.now()
-    timestamp = now.strftime("%m/%d/%Y %H:%M")
+    timestamp = now.strftime("%d/%m/%Y %H:%M")
 
     # Write data about each box to the database
     for box in all_predictions:
