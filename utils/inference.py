@@ -29,8 +29,8 @@ def format_results(results: list, transformation_map: list):
             feature_type_ids = [str(int(cls)) for cls in result.boxes.cls.tolist()] # Feature IDs
             # Combine all information into a single list for each box
             for box, confidence, feature_type_id in zip(boxes, confidences, feature_type_ids):
-                if feature_type_id == '2': # Convert microcorrugation feature type to corrugation
-                    feature_type_id = '1'
+                if int(feature_type_id) >= 2: # Remove Microcorrugation - Decrement all subsequent feature type IDs by 1
+                    feature_type_id = str(int(feature_type_id) - 1)
                 detection_info = [feature_type_id] + box + [confidence]
                 predicted_boxes.append(detection_info)
     return predicted_boxes
