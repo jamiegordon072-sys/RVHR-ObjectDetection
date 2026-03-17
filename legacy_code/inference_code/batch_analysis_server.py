@@ -197,11 +197,11 @@ if __name__ == "__main__":
     
     # Input argument argument overrides for testing
     # Comment out before compiling
-    #PORT = 65432
+    PORT = 65432
     
     # Executable input arguments
     # Uncomment before compiling
-    PORT = int(sys.argv[1]) # Port to run server on
+    #PORT = int(sys.argv[1]) # Port to run server on
     
     # Open TCP listening socket on localhost and port defined in input argument
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
