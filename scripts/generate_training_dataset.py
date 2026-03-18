@@ -19,6 +19,12 @@ LABELS = {
     2: "Pit",
     3: "Block Joint"
 }
+""""""
+LABELS = {
+    0: "Pit",
+    1: "Weld",
+    2: "F2"
+}
 
 def generate_training_dataset(db_path:str):
     """
@@ -34,6 +40,7 @@ def generate_training_dataset(db_path:str):
     source_dir = os.path.dirname(db_path)
 
     # Standardize Feature List Table to match labels
+    db.reorder_feature_types(LABELS)
 
     # Get list of all images with annotations
     ftr_types = list(LABELS.keys())

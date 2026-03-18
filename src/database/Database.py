@@ -209,10 +209,92 @@ class RVHR_DB(DB):
         """
         update_values = (timestamp, img_id)
         self._update(update_statement, update_values)
+    
+    
+    def reorder_feature_types(self, labels: dict[int, str]) -> None:
+        """
+        Reorder feature type list to match given labels dict
 
+        This will:
+        1. Assign new IDs to known labels (e.g. Weld → 0, etc.)
+        2. Assign remaining feature types sequential IDs after those
+        3. Safely remap IDs using a temporary offset to avoid collisions
+        4. Update foreign keys in the Feature table accordingly
 
-
+        param labels: Dictionary containing the desired feature type order
+        """
         
+        # Step 1: Get current FeatureType table
+        select_statement = f"""
+            SELECT id, name
+            FROM FeatureType
+        """
+        res = self._select(select_statement)
+        current_name_to_id = {name: fid for fid, name in res}
 
+        # Step 2: Insert any missing labels
+        insert_statement = f"""
+            INSERT INTO FeatureType
+            (name)
+            VALUES
+            (?)
+        """
+        for _, name in labels.items():
+            if name not in current_name_to_id:
+                self._insert(insert_statement, (name,))
+                select_statement = f"""
+                    SELECT id
+                    FROM FeatureType
+                    WHERE name = "{name}"
+                """
+                new_id = self._select(select_statement)
+                current_name_to_id[name] = new_id
 
+        # Step 3: Re-fetch the table including newly inserted labels
+        select_statement = f"""
+            SELECT id, name
+            FROM FeatureType
+        """
+        res = self._select(select_statement)
+
+        # Step 4: Assign new IDs
+        # Track used IDs to avoid collisions
+        used_ids = set(labels.keys())
+        name_to_new_id = {name: fid for fid, name in labels.items()}
+
+        # Start assigning remaining IDs after max label ID
+        next_id = max(labels.keys()) + 1
+        for old_id, name in res:
+            if name not in name_to_new_id:
+                # Skip IDs already in used_ids
+                while next_id in used_ids:
+                    next_id += 1
+                name_to_new_id[name] = next_id
+                used_ids.add(next_id)
+                next_id += 1
+
+        # Step 5: Build old_id → new_id mapping
+        old_to_new = {old_id: name_to_new_id[name] for old_id, name in res}
+
+        # Step 6: Temporarily shift IDs to avoid collisions
+        update_statement_ftr_type = f"""
+            UPDATE FeatureType
+            SET id = ?
+            WHERE id = ?
+            """
+        update_statement_ftr = f"""
+            UPDATE Feature
+            SET ftrType = ?
+            WHERE ftrType = ?
+            """
+        TEMP_OFFSET = 1000
+        update_values = [(old_id + TEMP_OFFSET, old_id) for old_id in old_to_new]
+        self._update_many(update_statement_ftr_type, update_values) # Shift Feature Type Table
+        self._update_many(update_statement_ftr, update_values) # Feature Table
+
+        # Step 7: Assign Final IDs from Temp Status
+        update_values = [(new_id, old_id + TEMP_OFFSET) for old_id, new_id in old_to_new.items()] 
+        self._update_many(update_statement_ftr_type, update_values) # Shift Feature Type Table
+        self._update_many(update_statement_ftr, update_values) # Feature Table
+    
         
