@@ -1,10 +1,9 @@
-import numpy as np
 import cv2
 import os
 import matplotlib.pyplot as plt
 
-from src.models.detection import ImageData
-from src.utils.utils import get_image, load_annotations
+from models.detection import ImageData
+from utils.utils import get_image, load_annotations
 
 def display_features(image_object: ImageData):
     """
@@ -13,13 +12,12 @@ def display_features(image_object: ImageData):
 
     image_tag = image_object.image_tag
     image = image_object.image
-    annotations = image_object.detections
-
-    for annotation in annotations:
-        x_min, y_min, x_max, y_max = annotation.bbox
+    
+    for detection in image_object.detections:
+        x_min, y_min, x_max, y_max = detection.bbox
         cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 4) # Draw bounding box
         # Optionally, add label text
-        cv2.putText(image, str(annotation.label), (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 255, 0), 4)
+        cv2.putText(image, str(detection.label), (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 255, 0), 4)
     
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 

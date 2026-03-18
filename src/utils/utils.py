@@ -1,11 +1,15 @@
 import os
 import cv2
 
-from src.models.detection import Detection
+from models.detection import Detection
 
 def get_image(image_path):
     # Load image as BGR format using OpenCV
     return cv2.imread(image_path, cv2.IMREAD_COLOR)
+
+def get_image_tag(image_path):
+    # Get the basename of the image without the extension
+    return os.path.splitext(os.path.basename(image_path))[0]
 
 
 def find_image_path(filename: str, source_dir: str) -> str | None:

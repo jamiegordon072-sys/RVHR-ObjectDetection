@@ -2,9 +2,9 @@ import numpy as np
 import cv2
 import os
 
-from src.models.transformation import TransformationMap
-from src.utils.utils import get_image
-from src.models.detection import  ImageData
+from models.transformation import TransformationMap
+from utils.utils import get_image
+from models.detection import  ImageData
 
 def crop_image(image: np.ndarray, num_rakes: int = 10, intensity_threshold_percentage: float = 20):
 

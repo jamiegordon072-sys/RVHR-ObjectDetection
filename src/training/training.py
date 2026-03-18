@@ -2,8 +2,8 @@ import numpy as np
 import cv2
 import albumentations as A
 
-from src.models.detection import Detection, ImageData
-from src.models.transformation import TransformationMap
+from models.detection import Detection, ImageData
+from models.transformation import TransformationMap
 
 
 def annotations_to_tile(image_tile: ImageData, trans_map: TransformationMap, annotations: list[Detection]) -> ImageData:

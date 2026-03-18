@@ -1,8 +1,9 @@
 import os
 import math
 import sqlite3
+from datetime import datetime
 
-from src.models.detection import Detection
+from models.detection import Detection, ImageData
 
 class DB:
     """
@@ -13,6 +14,10 @@ class DB:
 
     Methods:
         select - execute sql select statement and return values
+        update - execute sql update statement
+        update_many - execute sql update statement many times
+        insert - execute sql insert statement
+        insert_many - execute sql insert statement many times
     """
     def __init__(self, filepath: str):
         self.filepath: str = filepath
@@ -28,6 +33,7 @@ class DB:
     def _select(self, select_statement: str, preview: bool = False) -> list:
         """
         Selects values from database
+
         :param select_statement: sql select statement string
         :param preview: print preview of data returned
         :return values from database
@@ -42,12 +48,52 @@ class DB:
         return res
     
 
+    def _update(self, update_statement: str, values: tuple):
+        """
+        Executes an UPDATE statement
+
+        :param update_statement: SQL update statement with placeholders (?)
+        :param values: tuple of values
+        """
+        cur = self.conn.cursor()
+        cur.execute(update_statement, values)
+        self.conn.commit()
+        cur.close()
+
+
+    def _update_many(self, update_statement: str, values: list[tuple]):
+        cur = self.conn.cursor()
+        cur.executemany(update_statement, values)
+        self.conn.commit()
+        cur.close()
+    
+
+    def _insert(self, insert_statement: str, values: tuple):
+        """
+        Inserts values into database
+
+        :param insert_statement: SQL insert statement with placeholders (?)
+        :param values: tuple of values to insert
+        """
+        cur = self.conn.cursor()
+        cur.execute(insert_statement, values)
+        self.conn.commit()
+        cur.close()
+
+
+    def _insert_many(self, insert_statement: str, values: list[tuple]):
+        cur = self.conn.cursor()
+        cur.executemany(insert_statement, values)
+        self.conn.commit()
+        cur.close()
+    
+
 class RVHR_DB(DB):
     """
     Database class for RVHR. Table names are "Image, "Feature, "FeatureType"
     """
 
-    def get_img_id(self, img_name: str):
+    def get_img_id(self, img_name: str) -> int:
         """
         Get image id from database given image name
         :param img_name: name of the image file
@@ -63,7 +109,7 @@ class RVHR_DB(DB):
             raise ValueError(f"No image with name {img_name} found in database")
         return res[0][0]
     
-    def get_img_name(self, img_id: int):
+    def get_img_name(self, img_id: int) -> str:
         """
         Get image name from database given image id
         :param img_id: image id
@@ -79,7 +125,7 @@ class RVHR_DB(DB):
             raise ValueError(f"No image with id {img_id} found in database")
         return res[0][0]
     
-    def get_labelled_img_ids(self, ftr_types):
+    def get_labelled_img_ids(self, ftr_types) -> list[int]:
         """
         Get image ids that have valid annotations (ie. status=1, conf=1; ftr_type in provided list)
         param ftr_types: list of feature types to filter by
@@ -113,7 +159,6 @@ class RVHR_DB(DB):
         """
         res = self._select(select_statement)
 
-        image_name = self.get_img_name(img_id)
         annotations = []
         for row in res:
             label, x_min, y_min, x_max, y_max = row
@@ -123,4 +168,51 @@ class RVHR_DB(DB):
             )
             annotations.append(annotation)
         return annotations
+            
     
+    def insert_detections(self, image_data: ImageData) -> None:
+        """
+        Write a list of detections to the Feature Table in the DB
+
+        param image_path: Path to the Image
+        param detections: List of Detections
+        """
+
+        # Get Image ID
+        image_name = image_data.image_tag + ".jpg"
+        img_id = self.get_img_id(image_name)
+
+        # Get Timestamp
+        now = datetime.now()
+        timestamp = now.strftime("%d/%m/%Y %H:%M")
+
+        # Insert detections into Feature Table
+        insert_statement = f"""
+            INSERT INTO Feature
+            (imageid, ftrType, x1, y1, x2, y2, confidence, date)
+            VALUES
+            (?, ?, ?, ?, ?, ?, ?, ?)
+        """    
+        insert_values_list = [
+            (img_id, d.label, *d.bbox, d.confidence, timestamp)
+            for d in image_data.detections
+        ]
+        self._insert_many(insert_statement, insert_values_list)
+
+        # Mark Image as analysed
+        update_statement = f"""
+            UPDATE Image
+            SET
+            analysed = 1,
+            analysedDate= ?
+            WHERE id =?
+        """
+        update_values = (timestamp, img_id)
+        self._update(update_statement, update_values)
+
+
+
+        
+
+
+        
