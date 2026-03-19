@@ -297,4 +297,3 @@ class RVHR_DB(DB):
         self._update_many(update_statement_ftr_type, update_values) # Shift Feature Type Table
         self._update_many(update_statement_ftr, update_values) # Feature Table
     
-        

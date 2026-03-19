@@ -1,6 +1,8 @@
-import numpy as np
+import os
 import cv2
 import albumentations as A
+import hashlib
+import yaml
 
 from models.detection import Detection, ImageData
 from models.transformation import TransformationMap
@@ -173,7 +175,31 @@ def save_annotations(annotations: list[Detection], save_path: str, image_width: 
             f.write(f"{ftr_type} {x_centre:.6f} {y_centre:.6f} {width:.6f} {height:.6f}")
 
 
-def save_training_data(image_objects: list[ImageData], output_folder: str):
+def is_val(image_tag: str, val_ratio: float = 0.2) -> bool:
+    """
+    Determine whether image goes into train or val set
+    Not random so that tiles from the same image will always be either train or val. Prevents Data Leaking between train and val
+    """
+    base = image_tag.split("_tile")[0]
+    h = int(hashlib.md5(base.encode()).hexdigest(), 16)
+    return (h % 100) < int(val_ratio * 100)
+
+
+def load_split_file(filepath: str) -> set[str]:
+    """
+    Load a YOLO split file into a set of image paths. Returns empty set if file does not exist.
+    
+    param filepath: Path to train.txt or val.txt
+    returns: Set of image paths in YOLO split file
+    """
+    if not os.path.exists(filepath):
+        return set()
+
+    with open(filepath, "r") as f:
+        return set(line.strip() for line in f if line.strip())
+
+
+def save_training_data(image_objects: list[ImageData], dataset_folder: str):
     """
     Save the augmented images and annotations to the specified output path.
     
@@ -183,14 +209,78 @@ def save_training_data(image_objects: list[ImageData], output_folder: str):
     :return: None
     """
 
+    # Define Master Dataset
+    img_folder = os.path.join(dataset_folder, "all", "images")
+    lbl_folder = os.path.join(dataset_folder, "all", "labels")
+
+    # Define 
+    split_folder = os.path.join(dataset_folder, "splits")
+    train_file = os.path.join(split_folder, "train.txt")
+    val_file = os.path.join(split_folder, "val.txt")
+
+    # Create all directories
+    if os.path.isdir(dataset_folder):
+        for folder in [img_folder, lbl_folder, split_folder]:
+            os.makedirs(folder, exist_ok=True)
+    else:
+        raise ValueError(f"Dataset Folder does not exist at {dataset_folder}")
+
+
+    train_lines = []
+    val_lines = []
     for image_object in image_objects:
-        # Save the augmented image
         image = image_object.image
-        image_path = f"{output_folder}/{image_object.image_tag}.jpg"
+        tag = image_object.image_tag
+
+        image_path = os.path.join(img_folder, f"{tag}.jpg")
+        label_path = os.path.join(lbl_folder, f"{tag}.txt")
+
+        # Skip if already exists (prevents duplicates)
+        if os.path.exists(image_path):
+            continue
+
+        # Save to master dataset
         cv2.imwrite(image_path, image)
 
-        # Save the corresponding annotation
-        image_width, image_height = image.shape[1], image.shape[0]
-        annotation_path = f"{output_folder}/{image_object.image_tag}.txt"
-        save_annotations(image_object.detections, annotation_path, image_width, image_height)
+        h, w = image.shape[0], image.shape[1]
+        save_annotations(image_object.detections, label_path, w, h)
 
+        # Assign split
+        if is_val(tag):
+            val_lines.append(image_path)
+        else:
+            train_lines.append(image_path)
+
+    # Remove any new entries already in splits .txts
+    existing_train = load_split_file(train_file)
+    existing_val = load_split_file(val_file)
+    all_existing = existing_train.union(existing_val)
+    train_lines = [l for l in train_lines if l not in all_existing]
+    val_lines = [l for l in val_lines if l not in all_existing]
+
+    # Append new entries
+    with open(train_file, "a") as f:
+        for line in train_lines:
+            f.write(line + "\n")
+
+    with open(val_file, "a") as f:
+        for line in val_lines:
+            f.write(line + "\n")
+
+
+def generate_data_yaml(dataset_folder: str, labels: dict[int, str]):
+    """
+    Generate YOLO data.yaml file from dataset folder and label dict
+    """
+
+    yaml_path = os.path.join(dataset_folder, "data.yaml")
+
+    data = {
+        "path": os.path.abspath(dataset_folder),
+        "train": "splits/train.txt",
+        "val": "splits/val.txt",
+        "names": labels
+    }
+
+    with open(yaml_path, "w") as f:
+        yaml.dump(data, f, sort_keys=False)

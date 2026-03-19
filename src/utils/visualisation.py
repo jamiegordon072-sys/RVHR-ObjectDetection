@@ -28,8 +28,8 @@ def display_features(image_object: ImageData):
 
 if __name__ == "__main__":
 
-    image_path = "training_dataset/M3_T2_021-00009_20260303_00007_200,670km_xmin4198_xmax7462_aug0.jpg"
-    annotations_path = "training_dataset/M3_T2_021-00009_20260303_00007_200,670km_xmin4198_xmax7462_aug0.txt"
+    image_path = "training_dataset/all/images/M3_T2_021-00009_20260303_00015_200,686km_tile_6530_9794_aug0.jpg"
+    annotations_path = "training_dataset/all/labels/M3_T2_021-00009_20260303_00015_200,686km_tile_6530_9794_aug0.txt"
 
     image = get_image(image_path)
     annotations = load_annotations(annotations_path, image.shape[1], image.shape[0])

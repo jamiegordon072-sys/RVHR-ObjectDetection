@@ -1,0 +1,15 @@
+    {"Command":"ANALYSE",
+    "Image Paths":[
+        "C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1_LeftRail\\M3_T1_021-00009_20250304_00001_103,540km.jpg",
+        "C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1_LeftRail\\M3_T1_021-00009_20250304_00002_103,542km.jpg",
+        "C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1_LeftRail\\M3_T1_021-00009_20250304_00003_103,544km.jpg",
+        "C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1_LeftRail\\M3_T1_021-00009_20250304_00004_103,546km.jpg",
+        "C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1_LeftRail\\M3_T1_021-00009_20250304_00005_103,548km.jpg",
+        "C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1_LeftRail\\M3_T1_021-00009_20250304_00006_103,550km.jpg",
+        "C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1_LeftRail\\M3_T1_021-00009_20250304_00007_103,552km.jpg",
+        "C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1_LeftRail\\M3_T1_021-00009_20250304_00008_103,554km.jpg",
+        "C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1_LeftRail\\M3_T1_021-00009_20250304_00009_103,556km.jpg",
+        "C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1_LeftRail\\M3_T1_021-00009_20250304_00010_103,558km.jpg"
+        ],
+        "Database Path":"C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Data\\CPH v2 Sample - Copy\\250304-023503_M3_T1.db",
+        "Model Path":"C:\\Users\\J Gordon\\Documents\\Rail Tech\\RV-HR\\Code\\Analysis\\best.pt"}

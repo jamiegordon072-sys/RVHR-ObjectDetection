@@ -1,11 +1,11 @@
 import os
 from tqdm import tqdm
 
-from src.database.Database import RVHR_DB
-from src.preprocessing.preprocess import preprocess_image
-from src.training.training import annotations_to_tile, augment_images, save_training_data
-from src.utils.utils import find_image_path
-from src.models.detection import ImageData
+from database.Database import RVHR_DB
+from preprocessing.preprocess import preprocess_image
+from training.training import annotations_to_tile, augment_images, save_training_data, generate_data_yaml
+from utils.utils import find_image_path
+from models.detection import ImageData
 
 
 
@@ -18,12 +18,6 @@ LABELS = {
     1: "Corrugation",
     2: "Pit",
     3: "Block Joint"
-}
-""""""
-LABELS = {
-    0: "Pit",
-    1: "Weld",
-    2: "F2"
 }
 
 def generate_training_dataset(db_path:str):
@@ -72,6 +66,20 @@ def generate_training_dataset(db_path:str):
         # Save the training images and annotations to the training dataset path
         save_training_data(training_images, TRAINING_DATASET_PATH)
 
+    # Create a YOLO data.yaml file in the training dataset folder
+    generate_data_yaml(TRAINING_DATASET_PATH, LABELS)
+
 if __name__ == "__main__":
-    db_path = "C:/Workspace/Rail Tech/RV-HR/Data/CPH 032026/260303-025143_M3_T2.db"
-    generate_training_dataset(db_path)
+
+    db_paths = [
+        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/4 FB-FOR/240429-025515_M1+M2_T1.db",
+        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/5 SOT-FB/240429-025115_M1+M2_T1.db",
+        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/5 UNI-ISB/240430-005054_M1_T1.db",
+        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/6 ISB-JUNCTION/240430-005855_M1_T1.db",
+        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/ISB-UNI/240429-035248_M1_T1.db",
+        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/UNI-KHS/240429-041228_M1_T1.db",
+        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/T1_KGN-MMK_20221114/T1_KGN-MMK_20221114.db"]
+    
+    db_paths = ["C:/Workspace/Rail Tech/RV-HR/Data/CPH 032026/260303-025143_M3_T2.db"]
+    for db_path in db_paths:
+        generate_training_dataset(db_path)

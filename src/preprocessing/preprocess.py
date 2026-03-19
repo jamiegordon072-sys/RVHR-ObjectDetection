@@ -197,7 +197,7 @@ def preprocess_image(image_path: str):
 
         # Create Image Tile object
         image_tile_obj = ImageData(
-            image_tag=f"{os.path.splitext(os.path.basename(image_path))[0]}_xmin{tile_boundary[0]}_xmax{tile_boundary[1]}",
+            image_tag=f"{os.path.splitext(os.path.basename(image_path))[0]}_tile_{tile_boundary[0]}_{tile_boundary[1]}",
             image=image_tile,
             detections=[]
         )
