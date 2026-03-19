@@ -5,12 +5,11 @@ from database.Database import RVHR_DB
 from preprocessing.preprocess import preprocess_image
 from training.training import annotations_to_tile, augment_images, save_training_data, generate_data_yaml
 from utils.utils import find_image_path
-from models.detection import ImageData
 
 
 
 # Define Output Training Dataset Path
-TRAINING_DATASET_PATH = "training_dataset"
+TRAINING_DATASET_PATH = "data/training_dataset"
 
 # Define labels
 LABELS = {
@@ -80,6 +79,6 @@ if __name__ == "__main__":
         "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/UNI-KHS/240429-041228_M1_T1.db",
         "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/T1_KGN-MMK_20221114/T1_KGN-MMK_20221114.db"]
     
-    db_paths = ["C:/Workspace/Rail Tech/RV-HR/Data/CPH 032026/260303-025143_M3_T2.db"]
+    db_paths = ["C:/Workspace/Rail Tech/RV-HR/08 - Sample Data/Data/CPH 032026/260303-025143_M3_T2.db"]
     for db_path in db_paths:
         generate_training_dataset(db_path)

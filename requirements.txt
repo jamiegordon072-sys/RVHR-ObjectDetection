@@ -35,16 +35,15 @@ python-dateutil==2.9.0.post0
 pywin32-ctypes==0.2.3
 PyYAML==6.0.3
 requests==2.32.5
--e git+ssh://git@github.com/jamiegordon072-sys/RVHR-ObjectDetection.git@917e12d2a0ac63e1f80b3af2b9e6f963201f360e#egg=rvhr
 scipy==1.17.1
 setuptools==70.2.0
 simsimd==6.5.16
 six==1.17.0
 stringzilla==4.6.0
 sympy==1.14.0
-torch==2.7.1+cu118
-torchaudio==2.7.1+cu118
-torchvision==0.22.1+cu118
+#torch==2.7.1+cu118
+#torchaudio==2.7.1+cu118
+#torchvision==0.22.1+cu118
 tqdm==4.67.3
 typing-inspection==0.4.2
 typing_extensions==4.15.0

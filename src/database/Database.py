@@ -22,7 +22,10 @@ class DB:
     def __init__(self, filepath: str):
         self.filepath: str = filepath
         self.name: str = os.path.split(filepath)[1]
-        self.conn = sqlite3.connect(filepath)
+        if os.path.exists(self.filepath):
+            self.conn = sqlite3.connect(filepath)
+        else:
+            raise ValueError(f"Database doesnt exist at path: {self.filepath}")
 
 
     def __del__(self):
