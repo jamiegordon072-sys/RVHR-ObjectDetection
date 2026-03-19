@@ -128,9 +128,28 @@ class RVHR_DB(DB):
             raise ValueError(f"No image with id {img_id} found in database")
         return res[0][0]
     
-    def get_labelled_img_ids(self, ftr_types) -> list[int]:
+    def get_img_ids_manual_labels(self, ftr_types) -> list[int]:
         """
-        Get image ids that have valid annotations (ie. status=1, conf=1; ftr_type in provided list)
+        Get image ids that have manual labels (ie. status=1, conf=1; ftr_type in provided list)
+        param ftr_types: list of feature types to filter by
+        return: list of image ids that have valid annotations
+        """
+
+        ftr_type_str = ",".join(str(x) for x in ftr_types)
+
+        select_statement = f"""
+            SELECT DISTINCT imageid
+            FROM Feature
+            WHERE status = 1
+            AND confidence = 1
+            AND ftrType IN ({ftr_type_str})
+        """
+        res = self._select(select_statement)
+        return [row[0] for row in res]
+    
+    def get_img_ids_deleted_labels(self, ftr_types) -> list[int]:
+        """
+        Get image ids that have detected features removed (ie. status=0, conf<1; ftr_type in provided list)
         param ftr_types: list of feature types to filter by
         return: list of image ids that have valid annotations
         """
@@ -147,9 +166,9 @@ class RVHR_DB(DB):
         res = self._select(select_statement)
         return [row[0] for row in res]
 
-    def get_labelled_features(self, img_id: int) -> list[Detection]:
+    def get_features(self, img_id: int) -> list[Detection]:
         """
-        Get list of detections for a given image id
+        Get list of all detections for a given image id
         :param img_id: image id
         :return: list of Detection objects
         """
@@ -158,7 +177,6 @@ class RVHR_DB(DB):
             FROM Feature
             WHERE imageid={img_id}
             AND status=1
-            AND confidence=1
         """
         res = self._select(select_statement)
 

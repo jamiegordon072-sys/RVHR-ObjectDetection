@@ -37,7 +37,9 @@ def generate_training_dataset(db_path:str):
 
     # Get list of all images with annotations
     ftr_types = list(LABELS.keys())
-    img_ids = db.get_labelled_img_ids(ftr_types)
+    img_ids_1 = db.get_img_ids_manual_labels(ftr_types) # Get Images with manual labels
+    img_ids_2 = db.get_img_ids_deleted_labels(ftr_types) # Get Images with automatic labels removed
+    img_ids = list(set(img_ids_1) | set(img_ids_2))
     
     for img_id in tqdm(img_ids, desc="Processing Images", unit="img"):
         # Get image path
