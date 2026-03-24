@@ -51,7 +51,7 @@ class DB:
         return res
     
 
-    def _update(self, update_statement: str, values: tuple):
+    def _update(self, update_statement: str, values: tuple = ()):
         """
         Executes an UPDATE statement
 
@@ -318,3 +318,33 @@ class RVHR_DB(DB):
         self._update_many(update_statement_ftr_type, update_values) # Shift Feature Type Table
         self._update_many(update_statement_ftr, update_values) # Feature Table
     
+
+    def combine_feature_type(self, ftr_type_src: str, ftr_type_dst: str):
+        """
+        Convert a Feature Type to an Existing Feature Type
+
+        param ftr_type_src: Source Feature Type Name to Convert
+        param ftr_type_dst: Destination Feature Type Name to Convert To
+        """
+
+        # Get Feature Type Ids
+        select_statement = f"""
+            SELECT id
+            FROM FeatureType
+            WHERE name == "{ftr_type_src}"
+        """
+        src_id = self._select(select_statement)[0][0]
+        select_statement = f"""
+            SELECT id
+            FROM FeatureType
+            WHERE name == "{ftr_type_dst}"
+        """
+        dst_id = self._select(select_statement)[0][0]
+
+        update_statement = f"""
+            UPDATE Feature
+            SET ftrType = {dst_id}
+            WHERE ftrType = {src_id}
+        """
+        self._update(update_statement)
+
