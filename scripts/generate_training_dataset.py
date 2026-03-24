@@ -5,12 +5,11 @@ from database.Database import RVHR_DB
 from preprocessing.preprocess import preprocess_image
 from training.training import annotations_to_tile, augment_images, save_training_data, generate_data_yaml
 from utils.utils import find_image_path
-from models.detection import ImageData
 
 
 
 # Define Output Training Dataset Path
-TRAINING_DATASET_PATH = "training_dataset"
+TRAINING_DATASET_PATH = "data/training_dataset"
 
 # Define labels
 LABELS = {
@@ -33,12 +32,16 @@ def generate_training_dataset(db_path:str):
 
     source_dir = os.path.dirname(db_path)
 
-    # Standardize Feature List Table to match labels
-    db.reorder_feature_types(LABELS)
+    print(f"Generating Training Images for {os.path.basename(source_dir)}")
+
+    # Standardize Feature List Table to match labels - !!!DB Standardized prior to this script!!!
+    # db.reorder_feature_types(LABELS)
 
     # Get list of all images with annotations
     ftr_types = list(LABELS.keys())
-    img_ids = db.get_labelled_img_ids(ftr_types)
+    img_ids_1 = db.get_img_ids_manual_labels(ftr_types) # Get Images with manual labels
+    img_ids_2 = db.get_img_ids_deleted_labels(ftr_types) # Get Images with automatic labels removed
+    img_ids = list(set(img_ids_1) | set(img_ids_2))
     
     for img_id in tqdm(img_ids, desc="Processing Images", unit="img"):
         # Get image path
@@ -49,7 +52,7 @@ def generate_training_dataset(db_path:str):
             continue
         
         # Get annotations
-        annotations = db.get_labelled_features(img_id)
+        annotations = db.get_features(img_id)
 
         # Preprocess the image and get transformation map
         image_tiles, trans_maps = preprocess_image(img_path)
@@ -72,14 +75,15 @@ def generate_training_dataset(db_path:str):
 if __name__ == "__main__":
 
     db_paths = [
-        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/4 FB-FOR/240429-025515_M1+M2_T1.db",
-        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/5 SOT-FB/240429-025115_M1+M2_T1.db",
-        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/5 UNI-ISB/240430-005054_M1_T1.db",
-        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/6 ISB-JUNCTION/240430-005855_M1_T1.db",
-        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/ISB-UNI/240429-035248_M1_T1.db",
-        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/UNI-KHS/240429-041228_M1_T1.db",
-        "C:/Users/J Gordon/Documents/RVHR/RVHR Full Dataset/T1_KGN-MMK_20221114/T1_KGN-MMK_20221114.db"]
+        "C:/Workspace/Rail Tech/RV-HR/08 - Sample Data/Training Runs/4 FB-FOR/240429-025515_M1+M2_T1_training.db",
+        "C:/Workspace/Rail Tech/RV-HR/08 - Sample Data/Training Runs/5 SOT-FB/240429-025115_M1+M2_T1_training.db",
+        "C:/Workspace/Rail Tech/RV-HR/08 - Sample Data/Training Runs/5 UNI-ISB/240430-005054_M1_T1_training.db",
+        "C:/Workspace/Rail Tech/RV-HR/08 - Sample Data/Training Runs/6 ISB-JUNCTION/240430-005855_M1_T1_training.db",
+        "C:/Workspace/Rail Tech/RV-HR/08 - Sample Data/Training Runs/13 Rhp - Kh/241010-020838_RHP-KH_2_021_training.db",
+        "C:/Workspace/Rail Tech/RV-HR/08 - Sample Data/Training Runs/ISB-UNI/240429-035248_M1_T1_training.db",
+        "C:/Workspace/Rail Tech/RV-HR/08 - Sample Data/Training Runs/T1_KGN-MMK_20221114/T1_KGN-MMK_20221114_training.db",
+        "C:/Workspace/Rail Tech/RV-HR/08 - Sample Data/Training Runs/UNI-KHS/240429-041228_M1_T1_training.db"]
     
-    db_paths = ["C:/Workspace/Rail Tech/RV-HR/Data/CPH 032026/260303-025143_M3_T2.db"]
+    #db_paths = ["C:/Workspace/Rail Tech/RV-HR/08 - Sample Data/Training Runs/UNI-KHS/240429-041228_M1_T1_training.db"]
     for db_path in db_paths:
         generate_training_dataset(db_path)

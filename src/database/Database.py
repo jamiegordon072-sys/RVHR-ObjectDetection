@@ -22,7 +22,10 @@ class DB:
     def __init__(self, filepath: str):
         self.filepath: str = filepath
         self.name: str = os.path.split(filepath)[1]
-        self.conn = sqlite3.connect(filepath)
+        if os.path.exists(self.filepath):
+            self.conn = sqlite3.connect(filepath)
+        else:
+            raise ValueError(f"Database doesnt exist at path: {self.filepath}")
 
 
     def __del__(self):
@@ -48,7 +51,7 @@ class DB:
         return res
     
 
-    def _update(self, update_statement: str, values: tuple):
+    def _update(self, update_statement: str, values: tuple = ()):
         """
         Executes an UPDATE statement
 
@@ -125,9 +128,28 @@ class RVHR_DB(DB):
             raise ValueError(f"No image with id {img_id} found in database")
         return res[0][0]
     
-    def get_labelled_img_ids(self, ftr_types) -> list[int]:
+    def get_img_ids_manual_labels(self, ftr_types) -> list[int]:
         """
-        Get image ids that have valid annotations (ie. status=1, conf=1; ftr_type in provided list)
+        Get image ids that have manual labels (ie. status=1, conf=1; ftr_type in provided list)
+        param ftr_types: list of feature types to filter by
+        return: list of image ids that have valid annotations
+        """
+
+        ftr_type_str = ",".join(str(x) for x in ftr_types)
+
+        select_statement = f"""
+            SELECT DISTINCT imageid
+            FROM Feature
+            WHERE status = 1
+            AND confidence = 1
+            AND ftrType IN ({ftr_type_str})
+        """
+        res = self._select(select_statement)
+        return [row[0] for row in res]
+    
+    def get_img_ids_deleted_labels(self, ftr_types) -> list[int]:
+        """
+        Get image ids that have detected features removed (ie. status=0, conf<1; ftr_type in provided list)
         param ftr_types: list of feature types to filter by
         return: list of image ids that have valid annotations
         """
@@ -144,9 +166,9 @@ class RVHR_DB(DB):
         res = self._select(select_statement)
         return [row[0] for row in res]
 
-    def get_labelled_features(self, img_id: int) -> list[Detection]:
+    def get_features(self, img_id: int) -> list[Detection]:
         """
-        Get list of detections for a given image id
+        Get list of all detections for a given image id
         :param img_id: image id
         :return: list of Detection objects
         """
@@ -155,7 +177,6 @@ class RVHR_DB(DB):
             FROM Feature
             WHERE imageid={img_id}
             AND status=1
-            AND confidence=1
         """
         res = self._select(select_statement)
 
@@ -297,3 +318,33 @@ class RVHR_DB(DB):
         self._update_many(update_statement_ftr_type, update_values) # Shift Feature Type Table
         self._update_many(update_statement_ftr, update_values) # Feature Table
     
+
+    def combine_feature_type(self, ftr_type_src: str, ftr_type_dst: str):
+        """
+        Convert a Feature Type to an Existing Feature Type
+
+        param ftr_type_src: Source Feature Type Name to Convert
+        param ftr_type_dst: Destination Feature Type Name to Convert To
+        """
+
+        # Get Feature Type Ids
+        select_statement = f"""
+            SELECT id
+            FROM FeatureType
+            WHERE name == "{ftr_type_src}"
+        """
+        src_id = self._select(select_statement)[0][0]
+        select_statement = f"""
+            SELECT id
+            FROM FeatureType
+            WHERE name == "{ftr_type_dst}"
+        """
+        dst_id = self._select(select_statement)[0][0]
+
+        update_statement = f"""
+            UPDATE Feature
+            SET ftrType = {dst_id}
+            WHERE ftrType = {src_id}
+        """
+        self._update(update_statement)
+

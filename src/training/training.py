@@ -172,7 +172,7 @@ def save_annotations(annotations: list[Detection], save_path: str, image_width: 
         for annotation in annotations:
             ftr_type = annotation.label
             x_centre, y_centre, width, height = get_yolo_bbox(annotation, image_width, image_height)
-            f.write(f"{ftr_type} {x_centre:.6f} {y_centre:.6f} {width:.6f} {height:.6f}")
+            f.write(f"{ftr_type} {x_centre:.6f} {y_centre:.6f} {width:.6f} {height:.6f}\n")
 
 
 def is_val(image_tag: str, val_ratio: float = 0.2) -> bool:
